@@ -73,12 +73,13 @@ export const deleteMedicine = async (req, res) => {
 
 export const getLowStock = async (req, res) => {
   try {
-    const medicines = await Medicine.find({ quantity: { $lt: 10 } });
+    const medicines = await Medicine.find({ quantity: { $gte:1, $lt: 10 } });
     res.json(medicines);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 export const getExpiringSoon = async (req, res) => {
   try {
     const today = new Date();
@@ -94,3 +95,16 @@ export const getExpiringSoon = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const OutOfStock = async (req, res) => {
+  try {
+    const medicines = await Medicine.find({ quantity: { $eq: 0 } });
+    if(medicines.length===0){
+        return res.status(200).json({message:"All Products are in stock"})
+    }
+    return res.status(200).json({message:"Product Out of Stock",ProductDetail:`${medicines}`})
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

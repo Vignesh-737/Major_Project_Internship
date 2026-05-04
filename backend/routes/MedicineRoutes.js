@@ -6,7 +6,8 @@ import {
   updateMedicine,
   deleteMedicine,
   getLowStock,
-  getExpiringSoon
+  getExpiringSoon,
+  OutOfStock
 } from "../controllers/MedicineControllers.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -18,9 +19,11 @@ const router = express.Router();
 router.post("/", protect, isAdmin, addMedicine);
 router.put("/:id", protect, isAdmin, updateMedicine);
 router.delete("/:id", protect, isAdmin, deleteMedicine);
+router.get("/outofstock", protect,isAdmin, OutOfStock);
 
 router.get("/low-stock", protect, getLowStock);
 router.get("/expiring-soon", protect, getExpiringSoon);
+
 
 // All logged users
 router.get("/", protect, getMedicines);
