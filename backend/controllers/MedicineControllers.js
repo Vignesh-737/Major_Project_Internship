@@ -70,3 +70,27 @@ export const deleteMedicine = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getLowStock = async (req, res) => {
+  try {
+    const medicines = await Medicine.find({ quantity: { $lt: 10 } });
+    res.json(medicines);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const getExpiringSoon = async (req, res) => {
+  try {
+    const today = new Date();
+    const next30Days = new Date();
+    next30Days.setDate(today.getDate() + 30);
+
+    const medicines = await Medicine.find({
+      expiryDate: { $gte: today, $lte: next30Days }
+    });
+
+    res.json(medicines);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
