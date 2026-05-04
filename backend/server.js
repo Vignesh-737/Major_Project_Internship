@@ -4,6 +4,8 @@ import dotenv from "dotenv"
 import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
+import medicineRoutes from "./routes/MedicineRoutes.js";
+
 
 dotenv.config()
 const app=express();
@@ -17,6 +19,7 @@ app.get("/",(req,res)=>{
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
+app.use("/api/medicines", medicineRoutes);
 
 const connectDB=async()=>{
     try {
