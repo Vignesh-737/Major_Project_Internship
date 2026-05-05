@@ -6,8 +6,7 @@ import jwt from "jsonwebtoken";
 //register
 export const register=async(req,res)=>{
     try {
-        const {name,email,password}=req.body;
-
+        const { name, email, password, employeeId } = req.body;
         const exists=await User.findOne({email})
 
         if(exists){
@@ -20,6 +19,7 @@ export const register=async(req,res)=>{
             name,
             email,
             password:hashedPassword,
+            employeeId,
         });
 
         res.status(201).json({ message: "User registered" });
@@ -44,7 +44,7 @@ export const login=async(req,res)=>{
             return res.status(400).json({Error:"Credential invalid"});
         }
         const token = jwt.sign(
-            { id: user._id, role: user.role },
+            { id: user._id, role: user.role, employeeId: user.employeeId },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
 

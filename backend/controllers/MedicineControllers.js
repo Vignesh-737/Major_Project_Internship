@@ -102,7 +102,7 @@ export const OutOfStock = async (req, res) => {
     if(medicines.length===0){
         return res.status(200).json({message:"All Products are in stock"})
     }
-    return res.status(200).json({message:"Product Out of Stock",ProductDetail:`${medicines}`})
+    return res.status(200).json(medicines)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

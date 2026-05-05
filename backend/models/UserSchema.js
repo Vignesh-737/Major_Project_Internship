@@ -18,7 +18,12 @@ const userSchema=new mongoose.Schema({
     type: String,
     enum: ["user", "admin"],
     default: "user"
-  }
+  },
+  employeeId: {
+  type: String,
+  required: true,
+  unique: true
+},
 }, { timestamps: true });
 
 export default mongoose.model("User",userSchema);

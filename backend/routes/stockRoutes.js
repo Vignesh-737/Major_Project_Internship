@@ -5,7 +5,7 @@ import { isAdmin } from "../middleware/adminAuthMiddleware.js";
 
 const router = express.Router();
 
-router.patch("/:id", protect, isAdmin, updateStock);
+router.put("/:id", protect, isAdmin, updateStock);
 router.get("/history", protect, isAdmin, getStockHistory);
 
 export default router;

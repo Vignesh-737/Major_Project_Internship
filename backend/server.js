@@ -20,7 +20,6 @@ app.get("/",(req,res)=>{
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/medicines", medicineRoutes);
-
 app.use("/api/stock", stockRoutes);
 
 
