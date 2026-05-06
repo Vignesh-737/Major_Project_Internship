@@ -8,7 +8,6 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 
-// 🔥 ADD THIS BELOW
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");

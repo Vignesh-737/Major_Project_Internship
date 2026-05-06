@@ -2,13 +2,11 @@ import Medicine from "../models/MedicineSchema.js";
 import StockLog from "../models/StockLogs.js";
 import mongoose from "mongoose";
 
-// 🔷 UPDATE STOCK
 export const updateStock = async (req, res) => {
   try {
     const { id } = req.params;
     const { quantity, type } = req.body;
 
-    // Validate ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid medicine ID" });
     }
@@ -37,7 +35,6 @@ export const updateStock = async (req, res) => {
     medicine.quantity = newQuantity;
     await medicine.save();
 
-    // 🔥 Create stock log
     await StockLog.create({
       medicineId: id,
       change: quantity,
@@ -56,7 +53,6 @@ export const updateStock = async (req, res) => {
 };
 
 
-// 🔷 GET STOCK HISTORY
 export const getStockHistory = async (req, res) => {
   try {
     const logs = await StockLog.find()

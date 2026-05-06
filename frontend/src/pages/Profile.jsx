@@ -36,7 +36,6 @@ function Profile() {
       <div className="flex justify-center">
         <div className="bg-white p-6 rounded-2xl shadow-lg w-[400px]">
 
-          {/* Avatar */}
           <div className="flex flex-col items-center mb-6">
             <div className="w-20 h-20 rounded-full bg-green-600 flex items-center justify-center text-white text-3xl font-bold">
               {user.name?.charAt(0).toUpperCase()}
@@ -47,7 +46,6 @@ function Profile() {
             <p className="text-sm text-gray-500">{user.role}</p>
           </div>
 
-          {/* Info */}
           <div className="space-y-4">
 
             <div className="flex items-center gap-3 border p-3 rounded-lg">
@@ -76,7 +74,6 @@ function Profile() {
 
           </div>
 
-          {/* Logout */}
           <button
             onClick={() => {
               localStorage.removeItem("token");

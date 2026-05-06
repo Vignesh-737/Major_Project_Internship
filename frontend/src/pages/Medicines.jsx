@@ -21,7 +21,6 @@ function Medicines() {
     fetchMedicines();
   }, []);
 
-  // 🔥 FETCH
   const fetchMedicines = async () => {
     try {
       const res = await API.get("/medicines");
@@ -31,7 +30,6 @@ function Medicines() {
     }
   };
 
-  // 🔥 DELETE
   const deleteMedicine = async (id) => {
     if (!confirm("Delete this medicine?")) return;
 
@@ -43,7 +41,6 @@ function Medicines() {
     }
   };
 
-  // 🔥 EDIT
   const handleEdit = (medicine) => {
     setForm({
       ...medicine,
@@ -53,7 +50,6 @@ function Medicines() {
     setShowForm(true);
   };
 
-  // 🔥 SUBMIT (ADD + UPDATE)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -82,7 +78,6 @@ function Medicines() {
     }
   };
 
-  // 🔥 SEARCH
   const filtered = medicines.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -93,7 +88,6 @@ function Medicines() {
         Medicines
       </h1>
 
-      {/* ADD BUTTON */}
       <button
         onClick={() => {
           setShowForm(true);
@@ -104,7 +98,6 @@ function Medicines() {
         + Add Medicine
       </button>
 
-      {/* MODAL */}
       {showForm && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <form
@@ -188,7 +181,6 @@ function Medicines() {
         </div>
       )}
 
-      {/* SEARCH */}
       <input
         type="text"
         placeholder="Search medicine..."

@@ -1,7 +1,6 @@
 import Medicine from "../models/MedicineSchema.js";
 import mongoose from "mongoose";
 
-// CREATE
 export const addMedicine = async (req, res) => {
   try {
     const medicine = await Medicine.create({
@@ -15,7 +14,6 @@ export const addMedicine = async (req, res) => {
   }
 };
 
-//READ ONE
 export const GetSingleMedicine = async (req, res) => {
   try {
     const { id } = req.params;
@@ -36,7 +34,7 @@ export const GetSingleMedicine = async (req, res) => {
   }
 };
 
-// READ ALL
+
 export const getMedicines = async (req, res) => {
   try {
     const medicines = await Medicine.find();
@@ -46,7 +44,6 @@ export const getMedicines = async (req, res) => {
   }
 };
 
-// UPDATE
 export const updateMedicine = async (req, res) => {
   try {
     const updated = await Medicine.findByIdAndUpdate(
@@ -61,7 +58,6 @@ export const updateMedicine = async (req, res) => {
   }
 };
 
-// DELETE
 export const deleteMedicine = async (req, res) => {
   try {
     await Medicine.findByIdAndDelete(req.params.id);

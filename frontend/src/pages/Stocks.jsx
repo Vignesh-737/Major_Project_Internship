@@ -14,19 +14,16 @@ function Stock() {
     fetchLogs();
   }, []);
 
-  // 🔥 GET MEDICINES
   const fetchMedicines = async () => {
     const res = await API.get("/medicines");
     setMedicines(res.data);
   };
 
-  // 🔥 GET STOCK HISTORY
   const fetchLogs = async () => {
     const res = await API.get("/stock/history");
     setLogs(res.data);
   };
 
-  // 🔥 UPDATE STOCK
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -57,7 +54,6 @@ function Stock() {
         Stock Management
       </h1>
 
-      {/* 🔥 FORM */}
       <form
         onSubmit={handleUpdate}
         className="bg-white p-6 rounded-xl shadow mb-6"
@@ -66,7 +62,6 @@ function Stock() {
           Update Stock
         </h2>
 
-        {/* SELECT MEDICINE */}
         <select
           className="input"
           value={selected}
@@ -80,7 +75,6 @@ function Stock() {
           ))}
         </select>
 
-        {/* TYPE */}
         <select
           className="input"
           value={type}
@@ -90,7 +84,6 @@ function Stock() {
           <option value="REMOVE">Remove Stock</option>
         </select>
 
-        {/* QUANTITY */}
         <input
           type="number"
           placeholder="Quantity"
@@ -104,7 +97,6 @@ function Stock() {
         </button>
       </form>
 
-      {/* 🔥 STOCK HISTORY */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <h2 className="p-4 font-semibold">Stock History</h2>
 

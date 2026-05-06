@@ -31,7 +31,6 @@ function Register() {
   return (
     <div className="relative h-screen flex items-center justify-center">
 
-      {/* Background */}
       <img
         src="/bg_image.png"
         alt="bg"
@@ -40,14 +39,12 @@ function Register() {
 
       <div className="absolute w-full h-full bg-black/20 backdrop-blur-sm"></div>
 
-      {/* Card */}
       <motion.form
         onSubmit={handleSubmit}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="relative bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl w-[380px]"
       >
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-green-600">
             PharmaStock
@@ -73,7 +70,6 @@ function Register() {
           </div>
         </div>
 
-        {/* Employee ID */}
         <div className="mb-3">
           <label className="text-sm text-gray-600">Employee ID</label>
           <div className="flex items-center border rounded-lg px-2 mt-1">
@@ -89,7 +85,6 @@ function Register() {
           </div>
         </div>
 
-        {/* Email */}
         <div className="mb-3">
           <label className="text-sm text-gray-600">Email</label>
           <div className="flex items-center border rounded-lg px-2 mt-1">
@@ -106,7 +101,6 @@ function Register() {
           </div>
         </div>
 
-        {/* Password */}
         <div className="mb-4">
           <label className="text-sm text-gray-600">Password</label>
           <div className="flex items-center border rounded-lg px-2 mt-1">
@@ -123,19 +117,16 @@ function Register() {
           </div>
         </div>
 
-        {/* Button */}
         <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
           Register
         </button>
 
-        {/* Error */}
         {error && (
           <p className="text-red-500 text-sm text-center mt-3">
             {error}
           </p>
         )}
 
-        {/* Login link */}
         <p className="text-center text-sm text-gray-500 mt-4">
           Already have an account?{" "}
           <span
