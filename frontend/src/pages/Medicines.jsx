@@ -1,125 +1,141 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import API from "../services/api";
+import { FiSearch, FiTrash2 } from "react-icons/fi";
 
 function Medicines() {
+
   const [medicines, setMedicines] = useState([]);
   const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState(null);
 
+  // 🔥 USER
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user?.role === "admin";
+
+  // 🔥 FORM
   const [form, setForm] = useState({
     name: "",
     category: "",
     price: "",
-    quantity: "",
-    expiryDate: "",
-    supplier: ""
+    supplier: "",
+    expiryDate: ""
   });
 
   useEffect(() => {
     fetchMedicines();
   }, []);
 
+  // 🔥 FETCH
   const fetchMedicines = async () => {
     try {
+
       const res = await API.get("/medicines");
+
       setMedicines(res.data);
+
     } catch (err) {
       console.log(err);
     }
   };
 
-  const deleteMedicine = async (id) => {
-    if (!confirm("Delete this medicine?")) return;
-
-    try {
-      await API.delete(`/medicines/${id}`);
-      fetchMedicines();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleEdit = (medicine) => {
-    setForm({
-      ...medicine,
-      expiryDate: medicine.expiryDate?.slice(0, 10)
-    });
-    setEditId(medicine._id);
-    setShowForm(true);
-  };
-
-  const handleSubmit = async (e) => {
+  // 🔥 ADD
+  const addMedicine = async (e) => {
     e.preventDefault();
 
     try {
-      if (editId) {
-        await API.put(`/medicines/${editId}`, form);
-      } else {
-        await API.post("/medicines", form);
-      }
 
-      // reset
-      setShowForm(false);
-      setEditId(null);
+      await API.post("/medicines", form);
+
+      fetchMedicines();
+
       setForm({
         name: "",
         category: "",
         price: "",
-        quantity: "",
-        expiryDate: "",
-        supplier: ""
+        supplier: "",
+        quantity:""||0,
+        expiryDate: ""
       });
 
-      fetchMedicines();
     } catch (err) {
-      alert("Error saving medicine");
+      console.log(err);
     }
   };
 
-  const filtered = medicines.filter((m) =>
+  // 🔥 DELETE
+  const deleteMedicine = async (id) => {
+    try {
+
+      await API.delete(`/medicines/${id}`);
+
+      fetchMedicines();
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // 🔥 SEARCH
+  const filteredMedicines = medicines.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <Layout>
-      <h1 className="text-2xl font-bold text-green-700 mb-4">
-        Medicines
-      </h1>
 
-      <button
-        onClick={() => {
-          setShowForm(true);
-          setEditId(null);
-        }}
-        className="mb-4 bg-green-600 text-white px-4 py-2 rounded"
-      >
-        + Add Medicine
-      </button>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+        <h1 className="text-2xl font-bold text-green-700">
+          Medicines
+        </h1>
+
+        {/* SEARCH */}
+        <div className="flex items-center bg-white px-3 py-2 rounded-xl shadow w-72">
+
+          <FiSearch className="text-gray-400" />
+
+          <input
+            type="text"
+            placeholder="Search medicine..."
+            className="ml-2 w-full outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+        </div>
+
+      </div>
+
+      {/* 🔥 ADMIN FORM */}
+      {isAdmin ? (
+
+        <div className="bg-white p-6 rounded-2xl shadow mb-6">
+
+          <h2 className="text-lg font-semibold mb-4">
+            Add Medicine
+          </h2>
+
           <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-xl w-96 shadow"
+            onSubmit={addMedicine}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            <h2 className="text-lg font-bold mb-4">
-              {editId ? "Edit Medicine" : "Add Medicine"}
-            </h2>
 
             <input
-              className="input"
-              placeholder="Name"
+              type="text"
+              placeholder="Medicine Name"
+              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
               value={form.name}
               onChange={(e) =>
                 setForm({ ...form, name: e.target.value })
               }
+              required
             />
 
             <input
-              className="input"
+              type="text"
               placeholder="Category"
+              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
               value={form.category}
               onChange={(e) =>
                 setForm({ ...form, category: e.target.value })
@@ -128,118 +144,155 @@ function Medicines() {
 
             <input
               type="number"
-              className="input"
               placeholder="Price"
+              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
               value={form.price}
               onChange={(e) =>
                 setForm({ ...form, price: e.target.value })
               }
+              required
             />
 
             <input
-              type="number"
-              className="input"
-              placeholder="Quantity"
-              value={form.quantity}
-              onChange={(e) =>
-                setForm({ ...form, quantity: e.target.value })
-              }
-            />
-
-            <input
-              type="date"
-              className="input"
-              value={form.expiryDate}
-              onChange={(e) =>
-                setForm({ ...form, expiryDate: e.target.value })
-              }
-            />
-
-            <input
-              className="input"
+              type="text"
               placeholder="Supplier"
+              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
               value={form.supplier}
               onChange={(e) =>
                 setForm({ ...form, supplier: e.target.value })
               }
             />
 
-            <div className="flex justify-between mt-4">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
+            <input
+              type="date"
+              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
+              value={form.expiryDate}
+              onChange={(e) =>
+                setForm({ ...form, expiryDate: e.target.value })
+              }
+            />
 
-              <button className="bg-green-600 text-white px-4 py-2 rounded">
-                Save
-              </button>
-            </div>
+            <button
+              className="bg-green-600 text-white rounded-xl hover:bg-green-700 transition"
+            >
+              Add Medicine
+            </button>
+
           </form>
+
         </div>
+
+      ) : (
+
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-xl mb-6">
+          Only administrators can add or modify medicines.
+        </div>
+
       )}
 
-      <input
-        type="text"
-        placeholder="Search medicine..."
-        className="mb-4 p-2 border rounded w-full"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* 🔥 MEDICINE CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-      {/* TABLE */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-green-100">
-            <tr>
-              <th className="p-3">Name</th>
-              <th className="p-3">Category</th>
-              <th className="p-3">Price</th>
-              <th className="p-3">Quantity</th>
-              <th className="p-3">Expiry</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
+        {filteredMedicines.map((m) => (
 
-          <tbody>
-            {filtered.map((m) => (
-              <tr key={m._id} className="border-t">
-                <td className="p-3">{m.name}</td>
-                <td className="p-3">{m.category}</td>
-                <td className="p-3">₹{m.price}</td>
-                <td className="p-3">{m.quantity}</td>
-                <td className="p-3">
-                  {m.expiryDate?.slice(0, 10)}
-                </td>
+          <div
+            key={m._id}
+            className="bg-white rounded-2xl shadow p-5 hover:shadow-lg transition"
+          >
 
-                <td className="p-3 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(m)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                  >
-                    Edit
-                  </button>
+            {/* TOP */}
+            <div className="flex justify-between items-start">
 
-                  <button
-                    onClick={() => deleteMedicine(m._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {m.name}
+                </h2>
 
-        {filtered.length === 0 && (
-          <p className="p-4 text-center text-gray-500">
-            No medicines found
-          </p>
-        )}
+                <p className="text-sm text-gray-500">
+                  {m.category}
+                </p>
+              </div>
+
+              {/* STOCK STATUS */}
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  m.quantity === 0
+                    ? "bg-red-100 text-red-600"
+                    : m.quantity <= 10
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-green-100 text-green-600"
+                }`}
+              >
+                {m.quantity === 0
+                  ? "Out"
+                  : m.quantity <= 10
+                  ? "Low"
+                  : "In Stock"}
+              </div>
+
+            </div>
+
+            {/* DETAILS */}
+            <div className="mt-5 space-y-2 text-sm">
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Price
+                </span>
+
+                <span className="font-semibold">
+                  ₹{m.price}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Supplier
+                </span>
+
+                <span className="font-semibold">
+                  {m.supplier || "N/A"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Expiry
+                </span>
+
+                <span className="font-semibold">
+                  {m.expiryDate
+                    ? new Date(m.expiryDate)
+                        .toLocaleDateString()
+                    : "N/A"}
+                </span>
+              </div>
+
+            </div>
+
+            {/* ACTIONS */}
+            {isAdmin && (
+
+              <div className="mt-5 flex gap-2">
+
+                <button
+                  onClick={() => deleteMedicine(m._id)}
+                  className="flex items-center justify-center gap-2 bg-red-500 text-white w-full py-2 rounded-xl hover:bg-red-600 transition"
+                >
+                  <FiTrash2 />
+                  Delete
+                </button>
+
+              </div>
+
+            )}
+
+          </div>
+
+        ))}
+
       </div>
+
     </Layout>
   );
 }

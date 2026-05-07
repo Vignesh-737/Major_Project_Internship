@@ -1,150 +1,240 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import API from "../services/api";
+import { FiSearch } from "react-icons/fi";
+import StockModal from "../components/StockModal";
 
 function Stock() {
+
   const [medicines, setMedicines] = useState([]);
-  const [selected, setSelected] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [type, setType] = useState("ADD");
-  const [logs, setLogs] = useState([]);
+  const [search, setSearch] = useState("");
+
+  // 🔥 MODAL
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
+  const [modalType, setModalType] = useState("");
+
+  // 🔥 USER
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
     fetchMedicines();
-    fetchLogs();
   }, []);
 
+  // 🔥 FETCH
   const fetchMedicines = async () => {
-    const res = await API.get("/medicines");
-    setMedicines(res.data);
-  };
-
-  const fetchLogs = async () => {
-    const res = await API.get("/stock/history");
-    setLogs(res.data);
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    if (!selected || !quantity) {
-      alert("Fill all fields");
-      return;
-    }
-
     try {
-      await API.put(`/stock/${selected}`, {
-        quantity: Number(quantity),
-        type
-      });
 
-      alert("Stock updated");
-      setQuantity("");
-      fetchMedicines();
-      fetchLogs();
+      const res = await API.get("/medicines");
+
+      // 🔥 SORT ASCENDING
+      const sorted = res.data.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+      setMedicines(sorted);
 
     } catch (err) {
-      alert(err.response?.data?.error || "Error updating stock");
+      console.log(err);
     }
   };
+
+  // 🔥 UPDATE STOCK
+  const updateStock = async (quantity) => {
+
+    try {
+
+      await API.patch(
+        `/stock/${selectedMedicine._id}`,
+        {
+          quantity,
+          type: modalType
+        }
+      );
+
+      fetchMedicines();
+
+      setSelectedMedicine(null);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // 🔥 SEARCH FILTER
+  const filteredMedicines = medicines.filter((m) =>
+    m.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <Layout>
-      <h1 className="text-2xl font-bold text-green-700 mb-6">
-        Stock Management
-      </h1>
 
-      <form
-        onSubmit={handleUpdate}
-        className="bg-white p-6 rounded-xl shadow mb-6"
-      >
-        <h2 className="text-lg font-semibold mb-4">
-          Update Stock
-        </h2>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
 
-        <select
-          className="input"
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-        >
-          <option value="">Select Medicine</option>
-          {medicines.map((m) => (
-            <option key={m._id} value={m._id}>
-              {m.name} (Qty: {m.quantity})
-            </option>
-          ))}
-        </select>
+        <h1 className="text-2xl font-bold text-green-700">
+          Stock Management
+        </h1>
 
-        <select
-          className="input"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        >
-          <option value="ADD">Add Stock</option>
-          <option value="REMOVE">Remove Stock</option>
-        </select>
+        {/* SEARCH */}
+        <div className="flex items-center bg-white px-3 py-2 rounded-xl shadow w-72">
 
-        <input
-          type="number"
-          placeholder="Quantity"
-          className="input"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
+          <FiSearch className="text-gray-400" />
 
-        <button className="bg-green-600 text-white px-4 py-2 rounded mt-2">
-          Update
-        </button>
-      </form>
+          <input
+            type="text"
+            placeholder="Search medicine..."
+            className="ml-2 w-full outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <h2 className="p-4 font-semibold">Stock History</h2>
+        </div>
 
-        <table className="w-full">
-          <thead className="bg-green-100">
-            <tr>
-              <th className="p-3">Medicine</th>
-              <th>Type</th>
-              <th>Change</th>
-              <th>User</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {logs.map((log) => (
-              <tr key={log._id} className="border-t">
-                <td className="p-3">
-                  {log.medicineId?.name}
-                </td>
-
-                <td
-                  className={`${
-                    log.type === "ADD"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {log.type}
-                </td>
-
-                <td>{log.change}</td>
-                <td>{log.updatedBy?.name}</td>
-
-                <td>
-                  {new Date(log.createdAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {logs.length === 0 && (
-          <p className="p-4 text-center text-gray-500">
-            No stock activity yet
-          </p>
-        )}
       </div>
+
+      {/* USER WARNING */}
+      {!isAdmin && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-xl mb-4">
+          Only administrators can update stock.
+        </div>
+      )}
+
+      {/* STOCK LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {filteredMedicines.map((m) => (
+
+          <div
+            key={m._id}
+            className="bg-white rounded-2xl shadow p-5 hover:shadow-lg transition"
+          >
+
+            {/* TOP */}
+            <div className="flex justify-between items-start">
+
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {m.name}
+                </h2>
+
+                <p className="text-sm text-gray-500">
+                  {m.category}
+                </p>
+              </div>
+
+              {/* STOCK STATUS */}
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  m.quantity === 0
+                    ? "bg-red-100 text-red-600"
+                    : m.quantity <= 10
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-green-100 text-green-600"
+                }`}
+              >
+                {m.quantity === 0
+                  ? "Out"
+                  : m.quantity <= 10
+                  ? "Low"
+                  : "In Stock"}
+              </div>
+
+            </div>
+
+            {/* DETAILS */}
+            <div className="mt-5 space-y-2 text-sm">
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Quantity
+                </span>
+
+                <span className="font-semibold">
+                  {m.quantity}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Price
+                </span>
+
+                <span className="font-semibold">
+                  ₹{m.price}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Supplier
+                </span>
+
+                <span className="font-semibold">
+                  {m.supplier || "N/A"}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Expiry
+                </span>
+
+                <span className="font-semibold">
+                  {m.expiryDate
+                    ? new Date(m.expiryDate)
+                        .toLocaleDateString("en-GB")
+                    : "N/A"}
+                </span>
+              </div>
+
+            </div>
+
+            {/* ADMIN ACTIONS */}
+            {isAdmin && (
+
+              <div className="flex gap-2 mt-5">
+
+                <button
+                  onClick={() => {
+                    setSelectedMedicine(m);
+                    setModalType("ADD");
+                  }}
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+                >
+                  Add
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedMedicine(m);
+                    setModalType("REMOVE");
+                  }}
+                  className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                >
+                  Remove
+                </button>
+
+              </div>
+
+            )}
+
+          </div>
+
+        ))}
+
+      </div>
+
+      {/* 🔥 MODAL */}
+      {selectedMedicine && (
+        <StockModal
+          medicine={selectedMedicine}
+          type={modalType}
+          onClose={() => setSelectedMedicine(null)}
+          onSubmit={updateStock}
+        />
+      )}
+
     </Layout>
   );
 }

@@ -1,29 +1,104 @@
 import { NavLink } from "react-router-dom";
-import { FiHome, FiBox, FiActivity, FiUser } from "react-icons/fi";
+import {
+  FiHome,
+  FiBox,
+  FiActivity,
+  FiUser,
+  FiShield
+} from "react-icons/fi";
 
 function Sidebar() {
+
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="w-64 h-screen bg-white shadow-md p-4">
+
+
       <h1 className="text-2xl font-bold text-green-600 mb-8">
         PharmaStock
       </h1>
 
+
       <nav className="flex flex-col gap-4">
-        <NavLink to="/dashboard" className="flex justify-start items-center gap-2 p-2 hover:bg-green-100 rounded">
-          <FiHome /> Dashboard
+
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+    `flex items-center gap-2 p-2 rounded transition ${
+      isActive
+        ? "bg-green-100 text-green-700 font-semibold"
+        : "hover:bg-green-50"
+    }`
+  }
+        >
+          
+          <FiHome />
+          Dashboard
         </NavLink>
 
-        <NavLink to="/medicines" className="flex justify-start items-center gap-2 p-2 hover:bg-green-100 rounded">
-          <FiBox /> Medicines
+        <NavLink
+          to="/medicines"
+          className={({ isActive }) =>
+    `flex items-center gap-2 p-2 rounded transition ${
+      isActive
+        ? "bg-green-100 text-green-700 font-semibold"
+        : "hover:bg-green-50"
+    }`
+  }
+        >
+          <FiBox />
+          Medicines
         </NavLink>
 
-        <NavLink to="/stock" className="flex justify-start items-center gap-2 p-2 hover:bg-green-100 rounded">
-          <FiActivity /> Stock
+        <NavLink
+          to="/stock"
+         className={({ isActive }) =>
+    `flex items-center gap-2 p-2 rounded transition ${
+      isActive
+        ? "bg-green-100 text-green-700 font-semibold"
+        : "hover:bg-green-50"
+    }`
+  }
+        >
+          <FiActivity />
+          Stock
         </NavLink>
 
-        <NavLink to="/profile" className="flex justify-start items-center gap-2 p-2 hover:bg-green-100 rounded">
-          <FiUser /> Profile
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+    `flex items-center gap-2 p-2 rounded transition ${
+      isActive
+        ? "bg-green-100 text-green-700 font-semibold"
+        : "hover:bg-green-50"
+    }`
+  }
+        >
+          <FiUser />
+          Profile
         </NavLink>
+
+        {/* 🔥 ADMIN ONLY */}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+    `flex items-center gap-2 p-2 rounded transition ${
+      isActive
+        ? "bg-green-100 text-green-700 font-semibold"
+        : "hover:bg-green-50"
+    }`
+  }
+          >
+            <FiShield />
+            Admin Panel
+          </NavLink>
+        )}
+
       </nav>
     </div>
   );

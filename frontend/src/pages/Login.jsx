@@ -12,8 +12,6 @@ function Login() {
   const [error, setError] = useState("");
  localStorage.removeItem("token")
 
-
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -21,7 +19,8 @@ function Login() {
     try {
       const res = await API.post("/auth/login", { email, password });
 
-      localStorage.setItem("token", res.data.token);
+     localStorage.setItem("token", res.data.token);
+localStorage.setItem("user", JSON.stringify(res.data.user));
 
       navigate("/dashboard");
     } catch (err) {

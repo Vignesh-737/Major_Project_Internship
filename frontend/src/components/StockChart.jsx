@@ -4,13 +4,14 @@ function StockChart({ total, low, out }) {
   const data = [
     { name: "Normal", value: total - low - out },
     { name: "Low Stock", value: low },
-    { name: "Out of Stock", value: out }
+    { name: "Out of Stock", value: out },
+    { name: "Expiring Soon", value: out },
   ];
 
-  const COLORS = ["#22c55e", "#facc15", "#ef4444"];
+  const COLORS = ["#22c55e", "#0000FF", "#ef4444","#FFA500"];
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow mt-6">
+    <div className="bg-white p-4 rounded-xl shadow mt-4">
       <h2 className="text-lg font-semibold mb-4">Stock Overview</h2>
 
       <PieChart width={300} height={250}>

@@ -6,6 +6,7 @@ import authRoutes from "./routes/AuthRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import medicineRoutes from "./routes/MedicineRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
+import adminRoutes from "./routes/AdminRoutes.js";
 
 dotenv.config()
 const app=express();
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/stock", stockRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 

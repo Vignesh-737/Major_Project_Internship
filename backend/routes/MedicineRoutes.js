@@ -19,8 +19,8 @@ const router = express.Router();
 router.post("/", protect, isAdmin, addMedicine);
 router.put("/:id", protect, isAdmin, updateMedicine);
 router.delete("/:id", protect, isAdmin, deleteMedicine);
-router.get("/outofstock", protect,isAdmin, OutOfStock);
 
+router.get("/outofstock", protect, OutOfStock);
 router.get("/low-stock", protect, getLowStock);
 router.get("/expiring-soon", protect, getExpiringSoon);
 
