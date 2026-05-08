@@ -184,7 +184,7 @@ function Medicines() {
 
       ) : (
 
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-xl mb-6">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-xl mb-6 pointer-events-none">
           Only administrators can add or modify medicines.
         </div>
 
