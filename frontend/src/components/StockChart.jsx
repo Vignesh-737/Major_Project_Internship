@@ -1,29 +1,121 @@
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Cell
+} from "recharts";
 
-function StockChart({ total, low, out }) {
+function StockChart({
+  total,
+  low,
+  out,
+  expiring,
+  expired
+}) {
+
   const data = [
-    { name: "Normal", value: total - low - out },
-    { name: "Low Stock", value: low },
-    { name: "Out of Stock", value: out },
-    { name: "Expiring Soon", value: out },
+    {
+      name: "Normal",
+      value: total - low - out - expired
+    },
+    {
+      name: "Low Stock",
+      value: low
+    },
+    {
+      name: "Out Stock",
+      value: out
+    },
+    {
+      name: "Expiring",
+      value: expiring
+    },
+    {
+      name: "Expired",
+      value: expired
+    }
   ];
 
-  const COLORS = ["#22c55e", "#0000FF", "#ef4444","#FFA500"];
+  const COLORS = [
+    "#22c55e",
+    "#3b82f6",
+    "#ef4444",
+    "#f97316",
+    "#6b7280"
+  ];
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow mt-4">
-      <h2 className="text-lg font-semibold mb-4">Stock Overview</h2>
+    <div className="bg-white rounded-xl shadow p-5">
 
-      <PieChart width={300} height={250}>
-        <Pie data={data} cx="50%" cy="50%" outerRadius={80} dataKey="value">
-          {data.map((entry, index) => (
-            <Cell key={index} fill={COLORS[index]} />
-          ))}
-        </Pie>
+      {/* HEADER */}
+      <div className="mb-5">
 
-        <Tooltip />
-        <Legend />
-      </PieChart>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Inventory Overview
+        </h2>
+
+        <p className="text-sm text-gray-500 mt-1">
+          Current medicine stock analytics
+        </p>
+
+      </div>
+
+      {/* CHART */}
+      <div className="w-full h-[300px]">
+
+        <ResponsiveContainer width="100%" height="100%">
+
+          <BarChart
+            data={data}
+            barSize={45}
+          >
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+            />
+
+            <XAxis
+              dataKey="name"
+              tick={{
+                fontSize: 12
+              }}
+            />
+
+            <YAxis
+              tick={{
+                fontSize: 12
+              }}
+            />
+
+            <Tooltip />
+
+            <Bar
+              dataKey="value"
+              radius={[10, 10, 0, 0]}
+            >
+
+              {data.map((entry, index) => (
+
+                <Cell
+                  key={index}
+                  fill={COLORS[index]}
+                />
+
+              ))}
+
+            </Bar>
+
+          </BarChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
     </div>
   );
 }

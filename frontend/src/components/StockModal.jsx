@@ -27,7 +27,7 @@ function StockModal({
         <input
           type="number"
           placeholder="Enter quantity"
-          className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
+          className="w-full no-spinner border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
           value={quantity}
           onChange={(e) =>
             setQuantity(e.target.value)

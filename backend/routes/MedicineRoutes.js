@@ -7,7 +7,9 @@ import {
   deleteMedicine,
   getLowStock,
   getExpiringSoon,
-  OutOfStock
+  getExpired,
+  OutOfStock,
+  getActivities
 } from "../controllers/MedicineControllers.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -23,6 +25,9 @@ router.delete("/:id", protect, isAdmin, deleteMedicine);
 router.get("/outofstock", protect, OutOfStock);
 router.get("/low-stock", protect, getLowStock);
 router.get("/expiring-soon", protect, getExpiringSoon);
+router.get("/expired", protect, getExpired);
+
+router.get("/activity", protect, getActivities);
 
 
 // All logged users

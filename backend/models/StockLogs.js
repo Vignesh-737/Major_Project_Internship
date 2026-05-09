@@ -18,7 +18,11 @@ const stockLogSchema = new mongoose.Schema({
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
-  }
+  },
+  changedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User"
+},
 }, { timestamps: true });
 
 export default mongoose.model("StockLog", stockLogSchema);

@@ -1,297 +1,582 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import API from "../services/api";
-import { FiSearch, FiTrash2 } from "react-icons/fi";
+import toast from "react-hot-toast";
+import MedicineDetailsModal from "../components/MedicineDetailsModal";
 
 function Medicines() {
 
   const [medicines, setMedicines] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+const [deleteId, setDeleteId] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
 
-  // 🔥 USER
+const [newMedicine, setNewMedicine] = useState({
+  name: "",
+  category: "",
+  price: "",
+  quantity: "",
+  supplier: "",
+  manufacturer: "",
+  expiryDate: "",
+  image: "",
+  description: ""
+});
+
   const user = JSON.parse(localStorage.getItem("user"));
   const isAdmin = user?.role === "admin";
-
-  // 🔥 FORM
-  const [form, setForm] = useState({
-    name: "",
-    category: "",
-    price: "",
-    supplier: "",
-    expiryDate: ""
-  });
 
   useEffect(() => {
     fetchMedicines();
   }, []);
 
-  // 🔥 FETCH
   const fetchMedicines = async () => {
+
     try {
 
       const res = await API.get("/medicines");
 
-      setMedicines(res.data);
+      const sorted = res.data.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+      setMedicines(sorted);
 
     } catch (err) {
-      console.log(err);
+
+      toast.error("Failed to fetch medicines");
+
     }
   };
 
-  // 🔥 ADD
-  const addMedicine = async (e) => {
-    e.preventDefault();
+const deleteMedicine = async () => {
 
-    try {
+  try {
 
-      await API.post("/medicines", form);
+    await API.delete(
+      `/medicines/${deleteId}`
+    );
 
-      fetchMedicines();
+    toast.success(
+      "Medicine deleted"
+    );
 
-      setForm({
-        name: "",
-        category: "",
-        price: "",
-        supplier: "",
-        quantity:""||0,
-        expiryDate: ""
-      });
+    setDeleteOpen(false);
 
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    setDeleteId(null);
 
-  // 🔥 DELETE
-  const deleteMedicine = async (id) => {
-    try {
+    fetchMedicines();
 
-      await API.delete(`/medicines/${id}`);
+  } catch (err) {
 
-      fetchMedicines();
+    toast.error(
+      err.response?.data?.message ||
+      "Delete failed"
+    );
 
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  }
 
-  // 🔥 SEARCH
+};
+
   const filteredMedicines = medicines.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleAddMedicine = async () => {
+
+  try {
+
+    if (
+      !newMedicine.name ||
+      !newMedicine.price
+    ) {
+
+      toast.error(
+        "Name and price required"
+      );
+
+      return;
+
+    }
+
+    await API.post(
+      "/medicines",
+      newMedicine
+    );
+
+    toast.success(
+      "Medicine added"
+    );
+
+    setAddOpen(false);
+
+    setNewMedicine({
+      name: "",
+      category: "",
+      price: "",
+      quantity: "",
+      supplier: "",
+      manufacturer: "",
+      expiryDate: "",
+      image: "",
+      description: ""
+    });
+
+    fetchMedicines();
+
+  } catch (err) {
+
+    toast.error(
+      err.response?.data?.message ||
+      "Failed to add medicine"
+    );
+
+  }
+
+};
+
   return (
     <Layout>
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      {/* TOP */}
+      <div className="flex justify-between items-center mb-5">
 
-        <h1 className="text-2xl font-bold text-green-700">
-          Medicines
-        </h1>
+        <div>
 
-        {/* SEARCH */}
-        <div className="flex items-center bg-white px-3 py-2 rounded-xl shadow w-72">
+          <h1 className="text-2xl font-bold text-green-700">
+            Medicines
+          </h1>
 
-          <FiSearch className="text-gray-400" />
-
-          <input
-            type="text"
-            placeholder="Search medicine..."
-            className="ml-2 w-full outline-none"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <p className="text-sm text-gray-500 mt-1">
+            Manage pharmacy medicines inventory
+          </p>
 
         </div>
+
+        {/* SEARCH */}
+        <div className="flex items-center gap-3">
+
+  {/* SEARCH */}
+  <input
+    type="text"
+    placeholder="Search medicine..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500 w-64"
+  />
+
+  {/* ADD */}
+  {isAdmin && (
+
+    <button
+      onClick={() => setAddOpen(true)}
+      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+    >
+      Add Medicine
+    </button>
+
+  )}
+
+</div>
 
       </div>
 
-      {/* 🔥 ADMIN FORM */}
-      {isAdmin ? (
+      {/* GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 
-        <div className="bg-white p-6 rounded-2xl shadow mb-6">
+        {filteredMedicines.length > 0 ? (
 
-          <h2 className="text-lg font-semibold mb-4">
-            Add Medicine
-          </h2>
+          filteredMedicines.map((m) => (
 
-          <form
-            onSubmit={addMedicine}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
+            <div
+              key={m._id}
+              onClick={() => {
 
-            <input
-              type="text"
-              placeholder="Medicine Name"
-              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
-              value={form.name}
-              onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
-              required
-            />
+                setSelectedMedicine(m);
+                setDetailsOpen(true);
 
-            <input
-              type="text"
-              placeholder="Category"
-              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
-              value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value })
-              }
-            />
-
-            <input
-              type="number"
-              placeholder="Price"
-              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
-              value={form.price}
-              onChange={(e) =>
-                setForm({ ...form, price: e.target.value })
-              }
-              required
-            />
-
-            <input
-              type="text"
-              placeholder="Supplier"
-              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
-              value={form.supplier}
-              onChange={(e) =>
-                setForm({ ...form, supplier: e.target.value })
-              }
-            />
-
-            <input
-              type="date"
-              className="border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-300"
-              value={form.expiryDate}
-              onChange={(e) =>
-                setForm({ ...form, expiryDate: e.target.value })
-              }
-            />
-
-            <button
-              className="bg-green-600 text-white rounded-xl hover:bg-green-700 transition"
+              }}
+              className="bg-white rounded-xl shadow border border-gray-100 hover:shadow-md transition overflow-hidden cursor-pointer"
             >
-              Add Medicine
-            </button>
 
-          </form>
+              {/* IMAGE */}
+              <img
+                src={m.image || "https://placehold.co/600x400"}
+                alt={m.name}
+                className="w-full h-36 object-cover"
+              />
 
-        </div>
+              {/* BODY */}
+              <div className="p-4">
 
-      ) : (
+                {/* NAME */}
+                <div className="flex justify-between items-start gap-2">
 
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-xl mb-6 pointer-events-none">
-          Only administrators can add or modify medicines.
-        </div>
+                  <div>
 
-      )}
+                    <h2 className="text-base font-semibold text-gray-800">
+                      {m.name}
+                    </h2>
 
-      {/* 🔥 MEDICINE CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <p className="text-xs text-gray-500 mt-1">
+                      {m.category}
+                    </p>
 
-        {filteredMedicines.map((m) => (
+                  </div>
 
-          <div
-            key={m._id}
-            className="bg-white rounded-2xl shadow p-5 hover:shadow-lg transition"
-          >
+                  {/* STOCK */}
+                  <span className={`px-2 py-1 rounded-full text-[11px] font-medium whitespace-nowrap ${
+                    m.quantity === 0
+                      ? "bg-red-100 text-red-600"
+                      : m.quantity <= 10
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-green-100 text-green-700"
+                  }`}>
 
-            {/* TOP */}
-            <div className="flex justify-between items-start">
+                    {m.quantity === 0 ? "Out" : `${m.quantity} Left`}
 
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">
-                  {m.name}
-                </h2>
+                  </span>
 
-                <p className="text-sm text-gray-500">
-                  {m.category}
-                </p>
-              </div>
+                </div>
 
-              {/* STOCK STATUS */}
-              <div
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  m.quantity === 0
-                    ? "bg-red-100 text-red-600"
-                    : m.quantity <= 10
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-green-100 text-green-600"
-                }`}
-              >
-                {m.quantity === 0
-                  ? "Out"
-                  : m.quantity <= 10
-                  ? "Low"
-                  : "In Stock"}
+                {/* DETAILS */}
+                <div className="mt-4 space-y-1.5 text-xs">
+
+                  <div className="flex justify-between">
+
+                    <span className="text-gray-500">
+                      Supplier
+                    </span>
+
+                    <span className="font-medium text-gray-700 truncate max-w-[120px]">
+                      {m.supplier || "-"}
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between">
+
+                    <span className="text-gray-500">
+                      Price
+                    </span>
+
+                    <span className="font-medium text-gray-700">
+                      ₹{m.price}
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between">
+
+                    <span className="text-gray-500">
+                      Expiry
+                    </span>
+
+                    <span className="font-medium text-gray-700">
+
+                      {m.expiryDate
+                        ? new Date(m.expiryDate).toLocaleDateString("en-GB")
+                        : "-"}
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {/* BUTTONS */}
+                {isAdmin && (
+
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex gap-2 mt-4"
+                  >
+
+                    <button
+                      onClick={() => {
+
+                        setSelectedMedicine(m);
+                        setDetailsOpen(true);
+
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1.5 rounded-lg text-sm transition"
+                    >
+                      View
+                    </button>
+
+                    <button
+                      onClick={() => { setDeleteId(m._id);setDeleteOpen(true);}}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white py-1.5 rounded-lg text-sm transition"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                )}
+
               </div>
 
             </div>
 
-            {/* DETAILS */}
-            <div className="mt-5 space-y-2 text-sm">
+          ))
 
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Price
-                </span>
+        ) : (
 
-                <span className="font-semibold">
-                  ₹{m.price}
-                </span>
-              </div>
+          <div className="col-span-full bg-white rounded-xl shadow p-8 text-center text-gray-500">
 
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Supplier
-                </span>
-
-                <span className="font-semibold">
-                  {m.supplier || "N/A"}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Expiry
-                </span>
-
-                <span className="font-semibold">
-                  {m.expiryDate
-                    ? new Date(m.expiryDate)
-                        .toLocaleDateString()
-                    : "N/A"}
-                </span>
-              </div>
-
-            </div>
-
-            {/* ACTIONS */}
-            {isAdmin && (
-
-              <div className="mt-5 flex gap-2">
-
-                <button
-                  onClick={() => deleteMedicine(m._id)}
-                  className="flex items-center justify-center gap-2 bg-red-500 text-white w-full py-2 rounded-xl hover:bg-red-600 transition"
-                >
-                  <FiTrash2 />
-                  Delete
-                </button>
-
-              </div>
-
-            )}
+            No medicines found
 
           </div>
 
-        ))}
+        )}
 
       </div>
+
+      {/* MODAL */}
+      {detailsOpen && selectedMedicine && (
+
+        <MedicineDetailsModal
+          medicine={selectedMedicine}
+          onClose={() => setDetailsOpen(false)}
+          fetchMedicines={fetchMedicines}
+        />
+
+      )}
+
+      {/* ADD MODAL */}
+{addOpen && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-5">
+
+      <div className="flex items-center justify-between mb-5">
+
+        <div>
+
+          <h2 className="text-xl font-semibold text-gray-800">
+            Add Medicine
+          </h2>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Create new medicine entry
+          </p>
+
+        </div>
+
+        <button
+          onClick={() => setAddOpen(false)}
+          className="text-gray-500 hover:text-red-500 text-xl"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+
+        <input
+          type="text"
+          placeholder="Medicine Name"
+          value={newMedicine.name}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              name: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+        <input
+          type="text"
+          placeholder="Category"
+          value={newMedicine.category}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              category: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+        <input
+          type="number"
+          placeholder="Price"
+          value={newMedicine.price}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              price: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50 no-spinner"
+        />
+
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={newMedicine.quantity}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              quantity: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50 no-spinner"
+        />
+
+        <input
+          type="text"
+          placeholder="Supplier"
+          value={newMedicine.supplier}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              supplier: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+        <input
+          type="text"
+          placeholder="Manufacturer"
+          value={newMedicine.manufacturer}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              manufacturer: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+        <input
+          type="date"
+          value={newMedicine.expiryDate}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              expiryDate: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+        <input
+          type="text"
+          placeholder="Image URL"
+          value={newMedicine.image}
+          onChange={(e) =>
+            setNewMedicine({
+              ...newMedicine,
+              image: e.target.value
+            })
+          }
+          className="border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50"
+        />
+
+      </div>
+
+      <textarea
+        rows="3"
+        placeholder="Description"
+        value={newMedicine.description}
+        onChange={(e) =>
+          setNewMedicine({
+            ...newMedicine,
+            description: e.target.value
+          })
+        }
+        className="w-full mt-3 border rounded-xl px-3 py-2.5 text-sm outline-none bg-gray-50 resize-none"
+      />
+
+      <button
+        onClick={handleAddMedicine}
+        className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-sm font-medium transition"
+      >
+        Add Medicine
+      </button>
+
+    </div>
+
+  </div>
+
+)}
+
+{/* DELETE MODAL */}
+{deleteOpen && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+    <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+
+      {/* HEADER */}
+      <div className="p-5 border-b border-gray-100">
+
+        <h2 className="text-lg font-semibold text-gray-800">
+          Delete Medicine
+        </h2>
+
+        <p className="text-sm text-gray-500 mt-1">
+          This action cannot be undone
+        </p>
+
+      </div>
+
+      {/* BODY */}
+      <div className="p-5">
+
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+
+          <p className="text-sm text-red-600 leading-6">
+
+            Are you sure you want to
+            permanently delete this
+            medicine?
+
+          </p>
+
+        </div>
+
+        {/* BUTTONS */}
+        <div className="flex gap-3 mt-5">
+
+          <button
+            onClick={() => {
+
+              setDeleteOpen(false);
+
+              setDeleteId(null);
+
+            }}
+            className="flex-1 border border-gray-300 hover:bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-medium transition"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={deleteMedicine}
+            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl text-sm font-medium transition"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
     </Layout>
   );

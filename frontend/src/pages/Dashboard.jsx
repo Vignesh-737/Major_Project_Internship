@@ -13,19 +13,21 @@ function Dashboard() {
   const [LowStock, setLowStock] = useState(0);
   const [OutofStock, setOutofStock] = useState(0);
   const [ExpiryingSoon, setExpiryingSoon] = useState(0);
+  const [expiredMedicines, setExpiredMedicines] = useState(0);
 
   const [loading, setLoading] = useState(true);
 
-  // 🔥 MODAL
+  // MODAL
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMedicines, setModalMedicines] = useState([]);
 
-  // 🔥 LISTS
+  // LISTS
   const [allMedicines, setAllMedicines] = useState([]);
   const [lowMedicines, setLowMedicines] = useState([]);
   const [outMedicines, setOutMedicines] = useState([]);
   const [expiryMedicines, setExpiryMedicines] = useState([]);
+  const [expired, setExpired] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -43,13 +45,19 @@ function Dashboard() {
       setAllMedicines(medicines.data);
       setTotal(medicines.data.length);
 
-      // EXPIRY
+      // EXPIRING
       const expiry = await API.get("/medicines/expiring-soon");
 
       setExpiryMedicines(expiry.data);
       setExpiryingSoon(expiry.data.length);
 
-      // LOW
+      // EXPIRED
+      const expiredData = await API.get("/medicines/expired");
+
+      setExpired(expiredData.data);
+      setExpiredMedicines(expiredData.data.length);
+
+      // LOW STOCK
       const low = await API.get("/medicines/low-stock");
 
       setLowMedicines(low.data);
@@ -71,50 +79,52 @@ function Dashboard() {
 
         setLoading(false);
 
-      }, 100);
+      }, 50);
 
     }
   };
 
   return (
     <Layout>
+
+      {/* TOP */}
       <div className="flex items-center justify-between mb-6">
 
-  <div>
+        <div>
 
-    <h1 className="text-3xl font-bold text-gray-800">
-      Dashboard
-    </h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Dashboard
+          </h1>
 
-    <p className="text-sm text-gray-500 mt-1">
-      Pharmacy inventory overview
-    </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Pharmacy inventory overview
+          </p>
 
-  </div>
+        </div>
 
-  {/* REFRESH BUTTON */}
-  <button
-    onClick={fetchData}
-    className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow transition"
-  >
+        {/* REFRESH */}
+        <button
+          onClick={fetchData}
+          className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow transition"
+        >
 
-    <SlRefresh className="text-gray-600 text-lg" />
+          <SlRefresh className="text-gray-600 text-lg" />
 
-    <span className="text-sm font-medium text-gray-700">
-      Refresh
-    </span>
+          <span className="text-sm font-medium text-gray-700">
+            Refresh
+          </span>
 
-  </button>
+        </button>
 
-</div>
-
+      </div>
 
       {/* CARDS */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
 
         {loading ? (
 
           <>
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -124,6 +134,7 @@ function Dashboard() {
         ) : (
 
           <>
+
             {/* TOTAL */}
             <div
               onClick={() => {
@@ -164,7 +175,7 @@ function Dashboard() {
 
             </div>
 
-            {/* EXPIRY */}
+            {/* EXPIRING */}
             <div
               onClick={() => {
 
@@ -184,7 +195,27 @@ function Dashboard() {
 
             </div>
 
-            {/* OUT */}
+            {/* EXPIRED */}
+            <div
+              onClick={() => {
+
+                setModalTitle("Expired Medicines");
+                setModalMedicines(expired);
+                setModalOpen(true);
+
+              }}
+              className="cursor-pointer"
+            >
+
+              <Card
+                title="Expired"
+                value={expiredMedicines}
+                color="gray"
+              />
+
+            </div>
+
+            {/* OUT OF STOCK */}
             <div
               onClick={() => {
 
@@ -197,12 +228,13 @@ function Dashboard() {
             >
 
               <Card
-                title="Out of Stock"
+                title="Out Of Stock"
                 value={OutofStock}
                 color="red"
               />
 
             </div>
+
           </>
 
         )}
@@ -210,13 +242,14 @@ function Dashboard() {
       </div>
 
       {/* GRAPH + ACTIVITY */}
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
 
         <StockChart
           total={Total}
           low={LowStock}
           out={OutofStock}
           expiring={ExpiryingSoon}
+          expired={expiredMedicines}
         />
 
         <RecentActivity />
@@ -244,24 +277,26 @@ function Card({ title, value, color }) {
     green: "text-green-500",
     blue: "text-blue-500",
     red: "text-red-500",
-    orange: "text-orange-500"
+    orange: "text-orange-500",
+    gray: "text-gray-700"
   };
 
   const borderColors = {
     green: "border-green-500",
     blue: "border-blue-500",
     red: "border-red-500",
-    orange: "border-orange-500"
+    orange: "border-orange-500",
+    gray: "border-gray-500"
   };
 
   return (
     <div className={`bg-white p-4 rounded-xl shadow border-t-4 hover:shadow-lg transition ${borderColors[color]}`}>
 
-      <p className="text-gray-500">
+      <p className="text-gray-500 text-sm">
         {title}
       </p>
 
-      <h2 className={`text-2xl font-bold ${colors[color]}`}>
+      <h2 className={`text-2xl font-bold mt-2 ${colors[color]}`}>
         {value}
       </h2>
 

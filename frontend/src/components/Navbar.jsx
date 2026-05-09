@@ -38,10 +38,13 @@ function Navbar() {
     useState([]);
 
   const [showNotifications,
-    setShowNotifications] =
-    useState(false);
+  setShowNotifications] =
+  useState(false);
 
-  const notificationRef = useRef();
+const notificationRef = useRef();
+
+const previousNotifications =
+  useRef([]);
 
   // 🔥 USER
   const user = JSON.parse(
@@ -98,51 +101,119 @@ function Navbar() {
 
   // 🔥 FETCH NOTIFICATIONS
   const fetchNotifications = async () => {
+  try {
 
-    try {
+    const res = await API.get("/medicines");
+    const meds = res.data;
+    let alerts = [];
+    let hasNewNotification = false;
 
-      const res = await API.get(
-        "/medicines"
-      );
+    meds.forEach((m) => {
 
-      const meds = res.data;
+      // EXPIRED
+      if (
+        m.expiryDate &&
+        new Date(m.expiryDate) < new Date()
+      ) {
 
-      let alerts = [];
+        alerts.push({
+          type: "expired",
+          text: `${m.name} has expired`
+        });
 
-      meds.forEach((m) => {
+        hasNewNotification = true;
+      }
 
-        // OUT OF STOCK
-        if (m.quantity === 0) {
+      // EXPIRING SOON
+      else if (m.expiryDate) {
+
+        const expiry = new Date(m.expiryDate);
+
+        const today = new Date();
+
+        const diff =
+          Math.ceil(
+            (expiry - today) /
+            (1000 * 60 * 60 * 24)
+          );
+
+        if (diff <= 30) {
 
           alerts.push({
-            type: "out",
-            text: `${m.name} is out of stock`
+            type: "expiring",
+            text: `${m.name} expires in ${diff} days`
           });
 
+          hasNewNotification = true;
         }
+      }
 
-        // LOW STOCK
-        else if (
-          m.quantity <= 10
-        ) {
+      // OUT OF STOCK
+      if (m.quantity === 0) {
 
-          alerts.push({
-            type: "low",
-            text: `${m.name} is low on stock`
-          });
+        alerts.push({
+          type: "out",
+          text: `${m.name} is out of stock`
+        });
 
-        }
+        hasNewNotification = true;
+      }
 
-      });
+      // LOW STOCK
+      else if (m.quantity <= 10) {
 
-      setNotifications(alerts);
+        alerts.push({
+          type: "low",
+          text: `${m.name} is low on stock`
+        });
 
-    } catch (err) {
+        hasNewNotification = true;
+      }
 
-      console.log(err);
+    });
 
-    }
-  };
+    // SOUND
+    const storedNotifications =
+  JSON.parse(
+    localStorage.getItem(
+      "seenNotifications"
+    )
+  ) || [];
+
+const newAlerts = alerts.filter(
+  (alert) =>
+    !storedNotifications.includes(
+      alert.text
+    )
+);
+
+// PLAY SOUND ONLY FOR NEW ALERTS
+if (newAlerts.length > 0) {
+
+  const audio = new Audio(
+    "/notification.mp3"
+  );
+
+  audio.play();
+
+}
+
+// SAVE ALERTS
+localStorage.setItem(
+  "seenNotifications",
+  JSON.stringify(
+    alerts.map((a) => a.text)
+  )
+);
+
+    setNotifications(alerts);
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+};
 
   // 🔥 SEARCH FILTER
   const filteredMedicines =
@@ -359,6 +430,10 @@ function Navbar() {
                         className={`mt-1 ${
                           n.type === "out"
                             ? "text-red-500"
+                            : n.type === "expired"
+                            ? "text-gray-600"
+                            : n.type === "expiring"
+                            ? "text-orange-500"
                             : "text-yellow-500"
                         }`}
                       >
