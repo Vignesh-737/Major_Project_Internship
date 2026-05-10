@@ -62,7 +62,7 @@ function Profile() {
       );
 
     } catch (err) {
-
+      toast.error("Failed to fetch profile")
       console.log(err);
 
     }
@@ -75,7 +75,7 @@ function Profile() {
 
       setLoading(true);
 
-      await API.put(
+      const res = await API.put(
         "/auth/update-profile",
         {
           name,
@@ -83,8 +83,11 @@ function Profile() {
         }
       );
 
-      toast.success(
-        "Profile updated"
+      toast.success( "Profile updated");
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
       );
 
       fetchProfile();

@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import API from "../services/api";
 import { FiSearch } from "react-icons/fi";
 import StockModal from "../components/StockModal";
+import toast from "react-hot-toast";
 
 function Stock() {
 
@@ -35,6 +36,7 @@ function Stock() {
       setMedicines(sorted);
 
     } catch (err) {
+      toast.error("Failed to fetch stocks");
       console.log(err);
     }
   };
@@ -57,6 +59,7 @@ function Stock() {
       setSelectedMedicine(null);
 
     } catch (err) {
+      toast.error("Failed to update stocks");
       console.log(err);
     }
   };

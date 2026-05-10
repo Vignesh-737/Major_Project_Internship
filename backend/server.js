@@ -1,6 +1,8 @@
+import dotenv from "dotenv"
+dotenv.config()
+
 import express from "express"
 import cors from "cors"
-import dotenv from "dotenv"
 import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
@@ -8,7 +10,6 @@ import medicineRoutes from "./routes/MedicineRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
 import adminRoutes from "./routes/AdminRoutes.js";
 
-dotenv.config()
 const app=express();
 
 app.use(express.json());

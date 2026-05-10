@@ -24,6 +24,20 @@ const userSchema=new mongoose.Schema({
   required: true,
   unique: true
 },
+profileImage: {
+  type: String,
+  default: ""
+},isVerified: {
+  type: Boolean,
+  default: false
+},
+otp: {
+  type: String,
+  default: ""
+},
+otpExpires: {
+  type: Date
+},
 }, { timestamps: true });
 
 export default mongoose.model("User",userSchema);

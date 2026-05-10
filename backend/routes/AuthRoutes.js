@@ -1,19 +1,53 @@
 import express from "express";
-import { register, login } from "../controllers/AuthController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import rateLimit from "express-rate-limit";
+
+import {
+  register,
+  login,
+  verifyOTP,
+  sendRegisterOTP,
+  updateProfile,
+  changePassword
+} from "../controllers/AuthController.js";
+
+import {protect} from "../middleware/authMiddleware.js";
+
 import User from "../models/UserSchema.js";
 
-const router = express.Router();
+const router=express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+const otpLimiter=rateLimit({
+  windowMs:60*1000,
+  max:3,
+  message:{
+    message:"Too many OTP requests. Try again later."
+  }
+});
 
-router.get("/me", protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
+// AUTH
+router.post("/send-register-otp",otpLimiter,sendRegisterOTP);
+router.post("/verify-otp",verifyOTP);
+router.post("/register",register);
+router.post("/login",login);
+
+// PROFILE
+router.put("/update-profile",protect,updateProfile);
+router.put("/change-password",protect,changePassword);
+
+// GET CURRENT USER
+router.get("/me",protect,async(req,res)=>{
+  try{
+
+    const user=await User.findById(req.user.id).select("-password");
+
     res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+  }catch(error){
+
+    res.status(500).json({
+      error:error.message
+    });
+
   }
 });
 

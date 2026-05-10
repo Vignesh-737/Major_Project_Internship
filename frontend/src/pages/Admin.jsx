@@ -5,6 +5,7 @@ import {
   FiSearch,
   FiShield
 } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 function Admin() {
 
@@ -48,6 +49,7 @@ function Admin() {
       setUsers(sorted);
 
     } catch (err) {
+      toast.error("Unable to Fetch User, PLease try again")
       console.log(err);
     }
   };
@@ -64,6 +66,7 @@ function Admin() {
       fetchUsers();
 
     } catch (err) {
+      toast.error("Unable to Change Role, PLease try again")
       console.log(err);
     }
   };

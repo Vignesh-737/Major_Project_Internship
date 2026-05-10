@@ -6,6 +6,7 @@ import RecentActivity from "../components/RecentActivity";
 import SkeletonCard from "../components/Skeleton";
 import MedicineListModal from "../components/MedicineListModal";
 import { SlRefresh } from "react-icons/sl";
+import toast from "react-hot-toast";
 
 function Dashboard() {
 
@@ -70,7 +71,7 @@ function Dashboard() {
       setOutofStock(os.data.length || 0);
 
     } catch (err) {
-
+      toast.error("Unable to Fetch Data, Please try again.")
       console.log(err);
 
     } finally {
