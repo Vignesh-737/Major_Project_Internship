@@ -4,7 +4,9 @@ import {
   FiBox,
   FiActivity,
   FiUser,
-  FiShield
+  FiShield,
+  FiCreditCard,
+  FiClipboard
 } from "react-icons/fi";
 
 function Sidebar() {
@@ -66,6 +68,37 @@ function Sidebar() {
         >
           <FiActivity />
           Stock
+        </NavLink>
+
+        {/* BILLING */}
+        {isAdmin && (
+          <NavLink
+            to="/billing"
+            className={({ isActive }) =>
+              `flex items-center gap-2 p-2 rounded transition ${
+                isActive
+                  ? "bg-green-100 text-green-700 font-semibold"
+                  : "hover:bg-green-50"
+              }`
+            }
+          >
+            <FiCreditCard />
+            Billing
+          </NavLink>
+        )}
+
+        <NavLink
+          to="/activities"
+          className={({ isActive }) =>
+            `flex items-center gap-2 p-2 rounded transition ${
+              isActive
+                ? "bg-green-100 text-green-700 font-semibold"
+                : "hover:bg-green-50"
+            }`
+          }
+        >
+          <FiClipboard />
+          Activities
         </NavLink>
 
         <NavLink

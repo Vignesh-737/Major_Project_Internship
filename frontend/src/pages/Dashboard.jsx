@@ -3,7 +3,7 @@ import Layout from "../components/Layout";
 import API from "../services/api";
 import StockChart from "../components/StockChart";
 import RecentActivity from "../components/RecentActivity";
-import SkeletonCard from "../components/Skeleton";
+import Skeleton from "../components/Skeleton";
 import MedicineListModal from "../components/MedicineListModal";
 import { SlRefresh } from "react-icons/sl";
 import toast from "react-hot-toast";
@@ -125,11 +125,11 @@ function Dashboard() {
         {loading ? (
 
           <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+            <Skeleton type="card" />
+            <Skeleton type="card" />
+            <Skeleton type="card" />
+            <Skeleton type="card" />
+            <Skeleton type="card" />
           </>
 
         ) : (
@@ -243,19 +243,49 @@ function Dashboard() {
       </div>
 
       {/* GRAPH + ACTIVITY */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+      {/* GRAPH + ACTIVITY */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
 
-        <StockChart
-          total={Total}
-          low={LowStock}
-          out={OutofStock}
-          expiring={ExpiryingSoon}
-          expired={expiredMedicines}
-        />
+          {loading ? (
 
-        <RecentActivity />
+            <div className="bg-white rounded-2xl shadow p-5 animate-pulse h-[420px]">
 
-      </div>
+              <div className="h-5 bg-gray-200 rounded w-40 mb-6" />
+
+              <div className="h-[320px] bg-gray-100 rounded-xl" />
+
+            </div>
+
+          ) : (
+
+            <StockChart
+              total={Total}
+              low={LowStock}
+              out={OutofStock}
+              expiring={ExpiryingSoon}
+              expired={expiredMedicines}
+            />
+
+          )}
+
+          {loading ? (
+
+            <div className="bg-white rounded-2xl shadow p-5">
+
+              <Skeleton type="activity" />
+              <Skeleton type="activity" />
+              <Skeleton type="activity" />
+              <Skeleton type="activity" />
+
+            </div>
+
+          ) : (
+
+            <RecentActivity />
+
+          )}
+
+        </div>
 
       {/* MODAL */}
       {modalOpen && (

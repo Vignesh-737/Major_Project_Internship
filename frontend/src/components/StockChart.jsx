@@ -65,9 +65,9 @@ function StockChart({
       </div>
 
       {/* CHART */}
-      <div className="w-full h-[300px]">
+      <div className="w-full h-[300px] min-h-[300px]">
 
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="95%" height={300}>
 
           <BarChart
             data={data}

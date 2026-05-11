@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import API from "../services/api";
 import { FiSearch } from "react-icons/fi";
+import { SlRefresh } from "react-icons/sl";
+
+import Skeleton from "../components/Skeleton";
 import StockModal from "../components/StockModal";
 import toast from "react-hot-toast";
 
@@ -18,28 +21,48 @@ function Stock() {
   const user = JSON.parse(localStorage.getItem("user"));
   const isAdmin = user?.role === "admin";
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     fetchMedicines();
   }, []);
 
   // 🔥 FETCH
-  const fetchMedicines = async () => {
-    try {
+const fetchMedicines = async () => {
 
-      const res = await API.get("/medicines");
+  try {
 
-      // 🔥 SORT ASCENDING
-      const sorted = res.data.sort((a, b) =>
+    setLoading(true);
+
+    const res = await API.get(
+      "/medicines"
+    );
+
+    const sorted = res.data.sort(
+      (a, b) =>
         a.name.localeCompare(b.name)
-      );
+    );
 
-      setMedicines(sorted);
+    setMedicines(sorted);
 
-    } catch (err) {
-      toast.error("Failed to fetch stocks");
-      console.log(err);
-    }
-  };
+  } catch (err) {
+
+    toast.error(
+      "Failed to fetch stocks"
+    );
+
+    console.log(err);
+
+  } finally {
+
+    setTimeout(() => {
+
+      setLoading(false);
+
+    }, 50);
+
+  }
+};
 
   // 🔥 UPDATE STOCK
   const updateStock = async (quantity) => {
@@ -73,26 +96,47 @@ function Stock() {
     <Layout>
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
         <h1 className="text-2xl font-bold text-green-700">
           Stock Management
         </h1>
 
+        
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+
         {/* SEARCH */}
-        <div className="flex items-center bg-white px-3 py-2 rounded-xl shadow w-72">
+            <div className="flex items-center bg-white px-4 py-2.5 rounded-xl shadow border border-gray-100 w-full sm:w-72">
 
-          <FiSearch className="text-gray-400" />
+              <FiSearch className="text-gray-400" />
 
-          <input
-            type="text"
-            placeholder="Search medicine..."
-            className="ml-2 w-full outline-none"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+              <input
+                type="text"
+                placeholder="Search medicine..."
+                className="ml-3 w-full outline-none text-sm"
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+              />
 
-        </div>
+            </div>
+
+            {/* REFRESH */}
+            <button
+              onClick={fetchMedicines}
+              className="flex items-center justify-center gap-2 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow transition"
+            >
+
+              <SlRefresh className="text-gray-600 text-lg" />
+
+              <span className="text-sm font-medium text-gray-700">
+                Refresh
+              </span>
+
+            </button>
+
+          </div>
 
       </div>
 
@@ -104,9 +148,24 @@ function Stock() {
       )}
 
       {/* STOCK LIST */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
 
-        {filteredMedicines.map((m) => (
+        {loading ? (
+
+            <>
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+              <Skeleton type="table" />
+            </>
+
+          ) : (
+
+            filteredMedicines.map((m) => (
 
           <div
             key={m._id}
@@ -224,7 +283,7 @@ function Stock() {
 
           </div>
 
-        ))}
+        )))}
 
       </div>
 

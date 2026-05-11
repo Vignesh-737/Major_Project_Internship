@@ -11,6 +11,8 @@ function Admin() {
 
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const isSuperAdmin = currentUser?.role === "superadmin";
 
   useEffect(() => {
     fetchUsers();
@@ -28,18 +30,23 @@ function Admin() {
 
         // ADMINS FIRST
         if (
-          a.role === "admin" &&
-          b.role !== "admin"
+          a.role === "superadmin" &&
+          b.role !== "superadmin"
         ) {
           return -1;
         }
 
         if (
-          a.role !== "admin" &&
-          b.role === "admin"
+          a.role !== "superadmin" &&
+          b.role === "superadmin"
         ) {
           return 1;
         }
+
+        if (
+          a.role === "admin" &&
+          b.role === "user"
+        )
 
         // ALPHABETICAL
         return a.name.localeCompare(b.name);
@@ -71,6 +78,35 @@ function Admin() {
     }
   };
 
+  const updateJobRole = async (
+  id,
+  jobRole
+) => {
+
+  try {
+
+    await API.put(
+      `/admin/job-role/${id}`,
+      {
+        jobRole
+      }
+    );
+
+    toast.success(
+      "Job role updated"
+    );
+
+    fetchUsers();
+
+  } catch (err) {
+
+    toast.error(
+      "Failed to update role"
+    );
+
+  }
+};
+  
   // 🔥 SEARCH FILTER
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(search.toLowerCase())
@@ -137,7 +173,8 @@ function Admin() {
           <h2 className="text-3xl font-bold text-green-600 mt-2">
             {
               users.filter((u) =>
-                u.role === "admin"
+                u.role === "admin" ||
+                u.role === "superadmin"
               ).length
             }
           </h2>
@@ -166,12 +203,13 @@ function Admin() {
       <div className="bg-white rounded-2xl shadow overflow-hidden">
 
         {/* HEADER */}
-        <div className="grid grid-cols-5 bg-gray-100 px-6 py-4 text-sm font-semibold text-gray-600">
+        <div className="grid grid-cols-6 bg-gray-100 px-6 py-4 text-sm font-semibold text-gray-600">
 
           <div>Employee</div>
           <div>Email</div>
           <div>Employee ID</div>
           <div>Role</div>
+          <div>Job Role</div>
           <div className="text-center">Actions</div>
 
         </div>
@@ -189,7 +227,7 @@ function Admin() {
 
               <div
                 key={u._id}
-                className="grid grid-cols-5 items-center px-6 py-4 border-t hover:bg-gray-50 transition"
+                className="grid grid-cols-6 items-center px-6 py-4 border-t hover:bg-gray-50 transition"
               >
 
                 {/* EMPLOYEE */}
@@ -197,7 +235,9 @@ function Admin() {
 
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      u.role === "admin"
+                      u.role === "superadmin"
+                        ? "bg-purple-100 text-purple-700"
+                        : u.role === "admin"
                         ? "bg-green-100 text-green-600"
                         : "bg-gray-100 text-gray-600"
                     }`}
@@ -244,43 +284,94 @@ function Admin() {
 
                 </div>
 
+                {/* JOB ROLE */}
+                <div>
+
+                  <select
+                    value={u.jobRole || "Staff"}
+                    disabled={u.role === "superadmin"}
+                    onChange={(e) =>
+                      updateJobRole(
+                        u._id,
+                        e.target.value
+                      )
+                    }
+                    className={`border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none ${
+                      u.role === "superadmin"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white"
+                    }`}
+                  >
+
+                    <option>
+                      Pharmacist
+                    </option>
+
+                    <option>
+                      Cashier
+                    </option>
+
+                    <option>
+                      Stock Manager
+                    </option>
+
+                    <option>
+                      Inventory Manager
+                    </option>
+
+                    <option>
+                      Accountant
+                    </option>
+
+                    <option>
+                      Sales Staff
+                    </option>
+
+                    <option>
+                      Staff
+                    </option>
+
+                  </select>
+
+</div>
+
                 {/* ACTIONS */}
-                <div className="flex justify-center">
+                  <div className="flex justify-center">
 
-                  {isProtectedAdmin ? (
+                    {isProtectedAdmin ? (
 
-                    <button
-                      disabled
-                      className="bg-gray-200 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed"
-                    >
-                      Protected
-                    </button>
+                      <button
+                        disabled
+                        className="bg-gray-200 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed"
+                      >
+                        Protected
+                      </button>
 
-                  ) : u.role !== "admin" ? (
+                    ) : u.role !== "admin" ? (
 
-                    <button
-                      onClick={() =>
-                        changeRole(u._id, "admin")
-                      }
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                    >
-                      Make Admin
-                    </button>
+                      <button
+                        onClick={() =>
+                          changeRole(u._id, "admin")
+                        }
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                      >
+                        Make Admin
+                      </button>
 
-                  ) : (
+                    ) : (
 
-                    <button
-                      onClick={() =>
-                        changeRole(u._id, "user")
-                      }
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                    >
-                      Remove Admin
-                    </button>
+                      <button
+                        onClick={() =>
+                          changeRole(u._id, "user")
+                        }
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                      >
+                        Remove Admin
+                      </button>
 
-                  )}
+                    )}
 
-                </div>
+                  </div>
 
               </div>
 

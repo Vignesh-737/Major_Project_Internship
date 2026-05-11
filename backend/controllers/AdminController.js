@@ -27,6 +27,15 @@ export const updateRole = async (req, res) => {
       });
     }
 
+    if (req.user.role !== "superadmin") {
+
+        return res.status(403).json({
+          message:
+            "Only superadmin can change roles"
+        });
+
+      }
+
     user.role = role;
 
     await user.save();
@@ -40,4 +49,31 @@ export const updateRole = async (req, res) => {
     });
 
   }
+};
+
+export const updateJobRole =
+  async (req, res) => {
+
+    try {
+
+      const { jobRole } =
+        req.body;
+
+      const user =
+        await User.findByIdAndUpdate(
+          req.params.id,
+          { jobRole },
+          { returnDocument: "after"}
+        );
+
+      res.json(user);
+
+    } catch (error) {
+
+      res.status(500).json({
+        message:
+          error.message
+      });
+
+    }
 };

@@ -7,7 +7,10 @@ import {
   verifyOTP,
   sendRegisterOTP,
   updateProfile,
-  changePassword
+  changePassword,
+  sendForgotPasswordOTP,
+  verifyForgotPasswordOTP,
+  resetForgotPassword
 } from "../controllers/AuthController.js";
 
 import {protect} from "../middleware/authMiddleware.js";
@@ -29,6 +32,10 @@ router.post("/send-register-otp",otpLimiter,sendRegisterOTP);
 router.post("/verify-otp",verifyOTP);
 router.post("/register",register);
 router.post("/login",login);
+
+router.post("/forgot-password",otpLimiter,sendForgotPasswordOTP);
+router.post("/verify-forgot-otp",verifyForgotPasswordOTP);
+router.post( "/reset-password",resetForgotPassword);
 
 // PROFILE
 router.put("/update-profile",protect,updateProfile);

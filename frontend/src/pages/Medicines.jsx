@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import API from "../services/api";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import MedicineDetailsModal from "../components/MedicineDetailsModal";
+import Skeleton from "../components/Skeleton";
+import { SlRefresh } from "react-icons/sl";
 
 function Medicines() {
 
@@ -11,8 +15,9 @@ function Medicines() {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-const [deleteId, setDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
 const [newMedicine, setNewMedicine] = useState({
   name: "",
@@ -33,24 +38,36 @@ const [newMedicine, setNewMedicine] = useState({
     fetchMedicines();
   }, []);
 
-  const fetchMedicines = async () => {
+const fetchMedicines = async () => {
 
-    try {
+  try {
 
-      const res = await API.get("/medicines");
+    setLoading(true);
 
-      const sorted = res.data.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
+    const res = await API.get("/medicines");
 
-      setMedicines(sorted);
+    const sorted = res.data.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
 
-    } catch (err) {
+    setMedicines(sorted);
 
-      toast.error("Failed to fetch medicines");
+  } catch (err) {
 
-    }
-  };
+    toast.error(
+      "Failed to fetch medicines"
+    );
+
+  } finally {
+
+    setTimeout(() => {
+
+      setLoading(false);
+
+    }, 50);
+
+  }
+};
 
 const deleteMedicine = async () => {
 
@@ -138,11 +155,76 @@ const deleteMedicine = async () => {
 
 };
 
+const exportToExcel = () => {
+  if (filteredMedicines.length === 0) {
+    toast.error("No medicines to export");
+    return;
+  }
+
+  const formattedData = filteredMedicines.map((m) => ({
+    "Medicine Name": m.name,
+    Category: m.category || "-",
+    Price: `₹${m.price}`,
+    Quantity: m.quantity,
+    Supplier: m.supplier || "-",
+    Manufacturer: m.manufacturer || "-",
+    "Expiry Date": m.expiryDate
+      ? new Date(m.expiryDate).toLocaleDateString("en-GB")
+      : "-",
+    Description: m.description || "-"
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+  worksheet["!cols"] = [
+    { wch: 25 },
+    { wch: 20 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 25 },
+    { wch: 25 },
+    { wch: 18 },
+    { wch: 40 }
+  ];
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Medicines"
+  );
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array"
+  });
+
+  const fileData = new Blob(
+    [excelBuffer],
+    {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"
+    }
+  );
+
+  const now = new Date();
+
+  const formatted =now.toLocaleDateString("en-GB").replaceAll("/", "-") + "_" + now.toLocaleTimeString("en-GB").replaceAll(":", "-");
+
+saveAs(
+  fileData,
+  `PharmaStock_${formatted}.xlsx`
+);
+
+  toast.success("Excel exported successfully");
+};
+
   return (
     <Layout>
 
       {/* TOP */}
-      <div className="flex justify-between items-center mb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
         <div>
 
@@ -157,27 +239,45 @@ const deleteMedicine = async () => {
         </div>
 
         {/* SEARCH */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
 
   {/* SEARCH */}
+
+  <button
+            onClick={fetchMedicines}
+            className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow transition w-fit"
+          >
+  
+            <SlRefresh className="text-gray-600" />
+  
+            <span className="text-sm font-medium text-gray-700">
+              Refresh
+            </span>
+  
+          </button>
   <input
     type="text"
     placeholder="Search medicine..."
     value={search}
     onChange={(e) => setSearch(e.target.value)}
-    className="border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500 w-64"
-  />
+    className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-72 bg-white"  />
 
   {/* ADD */}
   {isAdmin && (
-
+    <>
+    <button
+      onClick={exportToExcel}
+      className="bg-white border border-green-600 text-green-700 hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-medium transition"
+    >
+      Export Excel
+    </button>
     <button
       onClick={() => setAddOpen(true)}
       className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
     >
       Add Medicine
     </button>
-
+    </>
   )}
 
 </div>
@@ -185,9 +285,21 @@ const deleteMedicine = async () => {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
 
-        {filteredMedicines.length > 0 ? (
+        {loading ? (
+
+          <>
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+            <Skeleton type="table" />
+          </>
+          ) : filteredMedicines.length > 0 ? (
 
           filteredMedicines.map((m) => (
 

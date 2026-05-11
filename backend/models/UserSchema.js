@@ -16,28 +16,40 @@ const userSchema=new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin"],
+    enum: ["user", "admin", "superadmin"],
     default: "user"
   },
   employeeId: {
   type: String,
   required: true,
   unique: true
-},
-profileImage: {
+  },
+  profileImage: {
+    type: String,
+    default: ""
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    type: String,
+    default: ""
+  },
+  otpExpires: {
+    type: Date
+  },
+  resetOtp: {
+    type: String,
+    default: ""
+  },
+  resetOtpExpires: {
+    type: Date
+  },
+  jobRole: {
   type: String,
-  default: ""
-},isVerified: {
-  type: Boolean,
-  default: false
-},
-otp: {
-  type: String,
-  default: ""
-},
-otpExpires: {
-  type: Date
-},
-}, { timestamps: true });
+  default: "Staff"
+  },
+  }, { timestamps: true });
 
 export default mongoose.model("User",userSchema);
