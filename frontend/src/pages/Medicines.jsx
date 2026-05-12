@@ -7,17 +7,20 @@ import { saveAs } from "file-saver";
 import MedicineDetailsModal from "../components/MedicineDetailsModal";
 import Skeleton from "../components/Skeleton";
 import { SlRefresh } from "react-icons/sl";
+import {useSearchParams} from "react-router-dom";
 
 function Medicines() {
 
   const [medicines, setMedicines] = useState([]);
-  const [search, setSearch] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+
+  const [search, setSearch] =useState(searchParams.get("search") || "");
 
 const [newMedicine, setNewMedicine] = useState({
   name: "",
