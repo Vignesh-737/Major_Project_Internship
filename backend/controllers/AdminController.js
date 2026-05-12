@@ -12,43 +12,78 @@ export const getUsers = async (req, res) => {
 };
 
 //update role
-export const updateRole = async (req, res) => {
+export const updateRole =
+  async (req, res) => {
 
-  try {
+    try {
 
-    const { role } = req.body;
+      const { role } =
+        req.body;
 
-    const user = await User.findById(req.params.id);
+      // VALIDATION
+      if (
+        ![
+          "user",
+          "admin",
+          "superadmin"
+        ].includes(role)
+      ) {
 
-    // 🔥 PROTECTED ADMIN
-    if (user.email === "admin@pharma.com") {
-      return res.status(403).json({
-        error: "Protected admin cannot be modified"
-      });
-    }
-
-    if (req.user.role !== "superadmin") {
-
-        return res.status(403).json({
+        return res.status(400).json({
           message:
-            "Only superadmin can change roles"
+            "Invalid role"
         });
 
       }
 
-    user.role = role;
+      const user =
+        await User.findById(
+          req.params.id
+        );
 
-    await user.save();
+      if (!user) {
 
-    res.json(user);
+        return res.status(404).json({
+          message:
+            "User not found"
+        });
 
-  } catch (error) {
+      }
 
-    res.status(500).json({
-      error: error.message
-    });
+      // PROTECT MAIN SUPERADMIN
+      if (
+        user.email ===
+          "admin@pharma.com" &&
+        role !== "superadmin"
+      ) {
 
-  }
+        return res.status(403).json({
+          message:
+            "Protected superadmin"
+        });
+
+      }
+
+      user.role = role;
+
+      await user.save();
+
+      res.json({
+        message:
+          "Role updated",
+        user
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      res.status(500).json({
+        message:
+          error.message
+      });
+
+    }
 };
 
 export const updateJobRole =

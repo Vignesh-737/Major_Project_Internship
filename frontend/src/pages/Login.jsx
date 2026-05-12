@@ -20,40 +20,26 @@ function Login() {
   const [password, setPassword] = useState("");
   const [captchaValue, setCaptchaValue] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // FORGOT PASSWORD STATES
-  const [showForgotModal, setShowForgotModal] =
-    useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] =  useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
 
-  const [forgotEmail, setForgotEmail] =
-    useState("");
-
-  const [otpSent, setOtpSent] =
-    useState(false);
-
-  const [otpLoading, setOtpLoading] =
-    useState(false);
-
-  const [otp, setOtp] =
-    useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   // LOGIN
   const handleLogin = async (e) => {
-
     e.preventDefault();
-
     if (!captchaValue) {
       toast.error("Please complete captcha");
       return;
     }
 
     try {
-
       setLoading(true);
-
       const res = await API.post(
         "/auth/login",
         {
@@ -62,26 +48,14 @@ function Login() {
         }
       );
 
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
-
+      localStorage.setItem("token",res.data.token);
+      localStorage.setItem("user",JSON.stringify(res.data.user));
       toast.success("Login successful");
-
       navigate("/dashboard");
 
     } catch (err) {
 
-      toast.error(
-        err.response?.data?.message ||
-        "Invalid credentials"
-      );
+      toast.error(err.response?.data?.message ||"Invalid credentials");
 
     } finally {
 
@@ -101,24 +75,18 @@ function Login() {
     try {
 
       setOtpLoading(true);
-
-      const res = await API.post(
-        "/auth/forgot-password",
+      const res = await API.post("/auth/forgot-password",
         {
           email: forgotEmail
         }
       );
 
       toast.success(res.data.message);
-
       setOtpSent(true);
 
     } catch (err) {
 
-      toast.error(
-        err.response?.data?.message ||
-        "Failed to send OTP"
-      );
+      toast.error(err.response?.data?.message ||"Failed to send OTP");
 
     } finally {
 
@@ -216,12 +184,12 @@ function Login() {
 
           <div className="mb-10">
 
-            <div className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6">
+            <div className="w-50 h-50 rounded-2xl bg-white/80 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6">
 
               <img
                 src="/logo.png"
                 alt="logo"
-                className="w-8 h-8 object-contain"
+                className="w-40 40 object-contain"
               />
 
             </div>

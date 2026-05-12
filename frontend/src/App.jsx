@@ -10,6 +10,9 @@ import Admin from "./pages/Admin";
 import ForgotPassword from "./pages/ForgotPassword";
 import Billing from "./pages/Billing";
 import RecentActivities from "./pages/RecentActivities";
+import About from "./pages/About";
+import AdminRoute from "./components/AdminRoute";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -21,14 +24,21 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />}/>
         <Route path="/register" element={<Register />} />
 
+        {/* NOT FOUND PAGE */}
+        <Route path="*" element={<ProtectRoutes><NotFound /></ProtectRoutes>}/>
+
         {/* Protected */}
         <Route path="/dashboard" element={ <ProtectRoutes><Dashboard /></ProtectRoutes>}/>
         <Route path="/medicines" element={ <ProtectRoutes> <Medicines /> </ProtectRoutes>}/>
         <Route path="/stock"element={<ProtectRoutes><Stock /></ProtectRoutes>}/>
-        <Route path="/billing" element={<ProtectRoutes><Billing /></ProtectRoutes>}/>
+        <Route path="/about" element={<ProtectRoutes><About /></ProtectRoutes>}/>
         <Route path="/profile"element={<ProtectRoutes><Profile /></ProtectRoutes>}/>
         <Route path="/activities" element={<ProtectRoutes><RecentActivities /></ProtectRoutes>}/>
-        <Route path="/admin" element={<ProtectRoutes><Admin /></ProtectRoutes>}/>
+
+        {/* Admin Routes */}
+        <Route path="/billing" element={<ProtectRoutes><AdminRoute><Billing /> </AdminRoute></ProtectRoutes>}/>
+        <Route path="/admin" element={<ProtectRoutes><AdminRoute><Admin /> </AdminRoute></ProtectRoutes>}/>
+        
       </Routes>
     </BrowserRouter>
   );

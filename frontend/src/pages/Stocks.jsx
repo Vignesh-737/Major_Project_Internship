@@ -13,13 +13,11 @@ function Stock() {
   const [medicines, setMedicines] = useState([]);
   const [search, setSearch] = useState("");
 
-  // 🔥 MODAL
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [modalType, setModalType] = useState("");
 
-  // 🔥 USER
   const user = JSON.parse(localStorage.getItem("user"));
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
 
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +25,6 @@ function Stock() {
     fetchMedicines();
   }, []);
 
-  // 🔥 FETCH
 const fetchMedicines = async () => {
 
   try {
@@ -64,7 +61,6 @@ const fetchMedicines = async () => {
   }
 };
 
-  // 🔥 UPDATE STOCK
   const updateStock = async (quantity) => {
 
     try {
@@ -87,7 +83,6 @@ const fetchMedicines = async () => {
     }
   };
 
-  // 🔥 SEARCH FILTER
   const filteredMedicines = medicines.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );

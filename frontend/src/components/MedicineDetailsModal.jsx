@@ -28,7 +28,7 @@ function MedicineDetailsModal({
   );
 
   const isAdmin =
-    user?.role === "admin";
+    user?.role === "admin"|| user?.role === "superadmin";
 
   const [editMode, setEditMode] =
     useState(false);
@@ -71,8 +71,8 @@ function MedicineDetailsModal({
         medicine.description || "",
 
       barcode:
-        medicine.barcode || 
-        `PHARMA${Date.now()}`,
+        medicine.barcode ||
+        `PHARMA-${medicine._id.slice(-8)}`,
 
       batchNo:
         medicine.batchNo || ""

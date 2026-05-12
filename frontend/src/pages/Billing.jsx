@@ -1,43 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-
 import Layout from "../components/Layout";
-
+import BarcodeScanner from "react-qr-barcode-scanner";
 import API from "../services/api";
-
 import toast from "react-hot-toast";
-
 import jsPDF from "jspdf";
-
 import autoTable from "jspdf-autotable";
-
 import Skeleton from "../components/Skeleton";
-
-import {
-  FiSearch,
-  FiTrash2
-} from "react-icons/fi";
-
+import {FiSearch,FiTrash2} from "react-icons/fi";
 import { SlRefresh } from "react-icons/sl";
 
 function Billing() {
-
-  const [medicines, setMedicines] =
-    useState([]);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [cart, setCart] =
-    useState([]);
-
-  const [customerName, setCustomerName] =
-    useState("");
-
-  const [shopName, setShopName] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(true);
+  const [medicines, setMedicines] =useState([]);
+  const [search, setSearch] =useState("");
+  const [cart, setCart] = useState([]);
+  const [customerName, setCustomerName] =useState("");
+  const [shopName, setShopName] =useState("");
+  const [loading, setLoading] =useState(true);
+  const [showScanner, setShowScanner] =useState(false);
 
   // FETCH
   useEffect(() => {
@@ -45,44 +24,52 @@ function Billing() {
   }, []);
 
   const fetchMedicines = async () => {
-
     try {
-
       setLoading(true);
-
-      const res =
-        await API.get("/medicines");
-
+      const res =await API.get("/medicines");
       setMedicines(res.data);
-
     } catch (err) {
-
       toast.error(
         "Failed to fetch medicines"
       );
-
     } finally {
-
       setTimeout(() => {
-
         setLoading(false);
-
       }, 50);
-
     }
   };
 
   // FILTER
-  const filteredMedicines =
-    medicines.filter((m) =>
+const filteredMedicines =
+  medicines.filter((m) => {
+
+    const query =
+      search.toLowerCase();
+
+    return (
+
       m.name
-        .toLowerCase()
-        .includes(search.toLowerCase())
+        ?.toLowerCase()
+        .includes(query)
+
+      ||
+
+      m.barcode
+        ?.toLowerCase()
+        .includes(query)
+
+      ||
+
+      m.batchNo
+        ?.toLowerCase()
+        .includes(query)
+
     );
+
+  });
 
   // ADD TO CART
   const addToCart = (medicine) => {
-
     const existing =
       cart.find(
         (item) =>
@@ -90,7 +77,6 @@ function Billing() {
       );
 
     if (existing) {
-
       setCart(
         cart.map((item) =>
           item.medicineId === medicine._id
@@ -107,7 +93,6 @@ function Billing() {
       );
 
     } else {
-
       setCart([
         ...cart,
         {
@@ -118,7 +103,6 @@ function Billing() {
           subtotal: medicine.price
         }
       ]);
-
     }
 
     toast.success("Added to cart");
@@ -164,7 +148,6 @@ function Billing() {
 
   // TOTAL
   const totalAmount = useMemo(() => {
-
     return cart.reduce(
       (acc, item) =>
         acc + item.subtotal,
@@ -177,33 +160,21 @@ function Billing() {
   const downloadPDF = (billNumber) => {
 
     const doc = new jsPDF();
-
     const primary = [22, 163, 74];
-
     const dark = [31, 41, 55];
-
     const light = [107, 114, 128];
-
     // HEADER
     doc.setFillColor(...primary);
-
     doc.rect(0, 0, 210, 35, "F");
-
     doc.setTextColor(255, 255, 255);
-
     doc.setFontSize(24);
-
     doc.setFont("helvetica", "bold");
-
     doc.text("PharmaStock", 14, 18);
-
     doc.setFontSize(11);
-
     doc.setFont(
       "helvetica",
       "normal"
     );
-
     doc.text(
       "Pharmacy Management Invoice",
       14,
@@ -212,7 +183,6 @@ function Billing() {
 
     // RESET
     doc.setTextColor(...dark);
-
     doc.setDrawColor(
       220,
       220,
@@ -230,46 +200,38 @@ function Billing() {
 
     // LEFT INFO
     doc.setFontSize(11);
-
     doc.setFont(
       "helvetica",
       "bold"
     );
-
     doc.text(
       "Customer Name",
       20,
       58
     );
-
     doc.setFont(
       "helvetica",
       "normal"
     );
-
     doc.text(
       customerName ||
       "Walk-in Customer",
       20,
       66
     );
-
     doc.setFont(
       "helvetica",
       "bold"
     );
-
     doc.text(
       "Shop Name",
       20,
       78
     );
-
     doc.setFont(
       "helvetica",
       "normal"
     );
-
     doc.text(
       shopName || "N/A",
       20,
@@ -281,40 +243,33 @@ function Billing() {
       "helvetica",
       "bold"
     );
-
     doc.text(
       "Invoice No",
       120,
       58
     );
-
     doc.setFont(
       "helvetica",
       "normal"
     );
-
     doc.text(
       billNumber,
       120,
       66
     );
-
     doc.setFont(
       "helvetica",
       "bold"
     );
-
     doc.text(
       "Date",
       120,
       78
     );
-
     doc.setFont(
       "helvetica",
       "normal"
     );
-
     doc.text(
       new Date().toLocaleString(),
       120,
@@ -323,23 +278,19 @@ function Billing() {
 
     // TABLE
     autoTable(doc, {
-
       startY: 105,
-
       head: [[
         "Medicine",
         "Qty",
         "Price",
         "Subtotal"
       ]],
-
       body: cart.map((item) => ([
         item.medicineName,
         item.quantity,
         `Rs ${Number(item.price)}`,
         `Rs ${Number(item.subtotal)}`
       ])),
-
       styles: {
         fontSize: 11,
         cellPadding: 5,
@@ -355,7 +306,6 @@ function Billing() {
         ],
         lineWidth: 0.2
       },
-
       headStyles: {
         fillColor: primary,
         textColor: [
@@ -366,7 +316,6 @@ function Billing() {
         fontStyle: "bold",
         halign: "center"
       },
-
       bodyStyles: {
         fillColor: [
           255,
@@ -374,7 +323,6 @@ function Billing() {
           255
         ]
       },
-
       alternateRowStyles: {
         fillColor: [
           245,
@@ -382,7 +330,6 @@ function Billing() {
           245
         ]
       },
-
       columnStyles: {
         1: {
           halign: "center"
@@ -579,19 +526,62 @@ function Billing() {
         <div className="xl:col-span-2 bg-white rounded-2xl shadow p-5">
 
           {/* SEARCH */}
-          <div className="flex items-center bg-gray-100 rounded-xl px-4 py-3 mb-5 border border-gray-200">
+          <div className="flex items-center gap-3 mb-5">
 
-            <FiSearch className="text-gray-400" />
+            {/* SEARCH BAR */}
+            <div className="flex items-center flex-1 bg-gray-100 rounded-lg px-3 py-2 border border-gray-200">
 
-            <input
-              type="text"
-              placeholder="Search medicines..."
-              className="ml-3 bg-transparent outline-none w-full"
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
+              <FiSearch
+                className="text-gray-400"
+                size={16}
+              />
+
+              <input
+                type="text"
+                placeholder="Search medicines, barcode, batch..."
+                className="ml-2 bg-transparent outline-none w-full text-sm"
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+              />
+
+            </div>
+
+            {/* SCANNER BUTTON */}
+            <button
+              onClick={() =>
+                setShowScanner(true)
               }
-            />
+              className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition whitespace-nowrap"
+            >
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"
+                />
+
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7 12h10"
+                />
+
+              </svg>
+
+              Scan
+
+            </button>
 
           </div>
 
@@ -836,6 +826,65 @@ function Billing() {
         </div>
 
       </div>
+
+      {/* SCANNER MODAL */}
+{showScanner && (
+
+  <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+
+    <div className="bg-white rounded-2xl p-5 w-full max-w-md">
+
+      <div className="flex items-center justify-between mb-4">
+
+        <h2 className="text-xl font-semibold">
+          Scan Barcode
+        </h2>
+
+        <button
+          onClick={() =>
+            setShowScanner(false)
+          }
+          className="text-red-500 font-medium"
+        >
+          Close
+        </button>
+
+      </div>
+
+      <div className="overflow-hidden rounded-xl">
+
+        <BarcodeScanner
+          width={500}
+          height={500}
+          onUpdate={(
+            err,
+            result
+          ) => {
+
+            if (result) {
+
+              setSearch(
+                result.text
+              );
+
+              setShowScanner(
+                false
+              );
+
+              toast.success(
+                "Barcode scanned"
+              );
+            }
+          }}
+        />
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
     </Layout>
   );
