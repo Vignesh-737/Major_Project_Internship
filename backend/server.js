@@ -1,6 +1,5 @@
-import dotenv from "dotenv"
+import dotenv from "dotenv" 
 dotenv.config()
-
 import express from "express"
 import cors from "cors"
 import mongoose from "mongoose";
@@ -16,9 +15,6 @@ const app=express();
 app.use(express.json());
 app.use(cors())
 
-app.get("/",(req,res)=>{
-    res.send("Backend Running")
-});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);

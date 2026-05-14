@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../components/Layout";
-import BarcodeScanner from "react-qr-barcode-scanner";
+import {Html5QrcodeScanner} from "html5-qrcode";
 import API from "../services/api";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -485,6 +485,85 @@ const filteredMedicines =
     }
   };
 
+useEffect(() => {
+
+  if (!showScanner) return;
+
+  let scanner;
+
+  const startScanner =
+    async () => {
+
+      try {
+
+        scanner =
+          new Html5QrcodeScanner(
+            "reader",
+            {
+              fps: 15,
+              qrbox: {
+                width: 250,
+                height: 120
+              },
+              aspectRatio: 1.7
+            },
+            false
+          );
+
+        scanner.render(
+
+          (decodedText) => {
+
+            setSearch(
+              decodedText.trim()
+            );
+
+            toast.success(
+              "Barcode scanned"
+            );
+
+            setShowScanner(false);
+
+            scanner.clear();
+
+          },
+
+          () => {}
+
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+          "Camera failed to open"
+        );
+
+      }
+
+    };
+
+  // WAIT FOR MODAL RENDER
+  setTimeout(() => {
+
+    startScanner();
+
+  }, 300);
+
+  return () => {
+
+    if (scanner) {
+
+      scanner.clear()
+        .catch(() => {});
+
+    }
+
+  };
+
+}, [showScanner]);
+
   return (
 
     <Layout>
@@ -853,29 +932,9 @@ const filteredMedicines =
 
       <div className="overflow-hidden rounded-xl">
 
-        <BarcodeScanner
-          width={500}
-          height={500}
-          onUpdate={(
-            err,
-            result
-          ) => {
-
-            if (result) {
-
-              setSearch(
-                result.text
-              );
-
-              setShowScanner(
-                false
-              );
-
-              toast.success(
-                "Barcode scanned"
-              );
-            }
-          }}
+        <div
+          id="reader"
+          className="rounded-xl overflow-hidden"
         />
 
       </div>

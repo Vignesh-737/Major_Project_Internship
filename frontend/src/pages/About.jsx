@@ -147,7 +147,7 @@ function About() {
 
             <span className="text-gray-700 font-medium">
 
-              pharmastock.com@example.com
+              pharmastock.com@gmail.com
 
             </span>
 
